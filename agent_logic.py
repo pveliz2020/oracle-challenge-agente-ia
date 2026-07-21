@@ -8,7 +8,19 @@ y la definicion del flujo de control basado en grafos.
 # 1. IMPORTACION DE LIBRERIAS Y CONFIGURACION DE ENTORNO
 # =====================================================================
 # Definicion de dependencias de LangChain, LangGraph y Google Generative AI.
+import os
+from pathlib import Path
+from typing import Literal, List, Dict, TypedDict, Optional
 
+from langchain_community.document_loaders import PyMuPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_community.vectorstores import FAISS
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.chains.combine_documents import create_stuff_documents_chain
+
+from pydantic import BaseModel, Field
+from langgraph.graph import START, END, StateGraph
 
 # =====================================================================
 # 2. PROCESAMIENTO DE DOCUMENTOS E INDEXACION VECTORIAL
