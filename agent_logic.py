@@ -7,7 +7,7 @@ y la definicion del flujo de control basado en grafos.
 # =====================================================================
 # 1. IMPORTACION DE LIBRERIAS Y CONFIGURACION DE ENTORNO
 # =====================================================================
-# Definicion de dependencias de LangChain, LangGraph y Google Generative AI.
+# Definicion de dependencias de LangChain, LangGraph y Google Generative AI
 import os
 from pathlib import Path
 from typing import Literal, List, Dict, TypedDict, Optional
@@ -22,25 +22,62 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from pydantic import BaseModel, Field
 from langgraph.graph import START, END, StateGraph
 
+
 # =====================================================================
 # 2. PROCESAMIENTO DE DOCUMENTOS E INDEXACION VECTORIAL
 # =====================================================================
 
-def cargar_politicas_empresa(directorio_path: str):
+def cargar_politicas_empresa(directorio_path: str = "documentos/"):
     """
-    Carga y segmenta los documentos PDF oficiales de Mercado Central 24h.
-    Utiliza RecursiveCharacterTextSplitter para la generacion de chunks.
+    Carga y segmenta los documentos PDF oficiales de Mercado Central 24h
+    (Reglamento, Proveedores, FAQ, Atencion al cliente) para crear nuestra base de conocimientos.
     """
-    pass
+    docs = []
+    ruta = Path(directorio_path)
+    
+    # Recorremos la carpeta para encontrar todos los archivos de la empresa en formato PDF
+    for pdf_path in ruta.glob("*.pdf"):
+        try:
+            loader = PyMuPDFLoader(str(pdf_path))  # Utilizando la herramienta PyMuPDFLoader vista en el curso
+            documentos_cargados = loader.load()
+            docs.extend(documentos_cargados)
+            print(f"Archivo leido exitosamente: {pdf_path.name}")
+        except Exception as e:
+            print(f"Error al leer el archivo {pdf_path.name}: {e}")
+
+    # Dividimos los textos en fragmentos mas pequenos para facilitar la busqueda
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=300,  # Tamano de fragmento aprendido en clases
+        chunk_overlap=30 # Superposicion para no perder el hilo entre partes
+    )
+    docs_splits = splitter.split_documents(docs)
+    print(f"Total de fragmentos creados: {len(docs_splits)}")
+    return docs_splits
 
 
-def inicializar_almacen_vectorial(chunks_documentos):
+def inicializar_almacen_vectorial(chunks_documentos, gemini_api_key: str):
     """
-    Genera los embeddings utilizando el modelo de Google y los
-    almacena en una base de datos vectorial local basada en FAISS.
-    Retorna el retriever configurado con umbrales de similitud.
+    Convierte el texto de los documentos en representaciones numericas (embeddings)
+    usando Google y los guarda en una base de datos local FAISS para realizar busquedas rapidas.
     """
-    pass
+    # Modelo de embeddings oficial de Google visto en el proyecto
+    modelo_embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/gemini-embedding-001",
+        google_api_key=gemini_api_key
+    )
+
+    # Creacion de la base de datos vectorial local FAISS vista en clase
+    vectorstore = FAISS.from_documents(
+        chunks_documentos,
+        modelo_embeddings
+    )
+
+    # Configuracion del buscador con filtro de similitud para evitar respuestas inventadas
+    retriever = vectorstore.as_retriever(
+        search_type="similarity_score_threshold",
+        search_kwargs={"score_threshold": 0.3, "k": 4} # Umbral exacto utilizado en nuestras clases
+    )
+    return retriever
 
 
 # =====================================================================
