@@ -277,9 +277,48 @@ def nodo_abrir_ticket(state: AgentState) -> dict:
 # 5. CONSTRUCCION Y COMPILACION DEL WORKFLOW
 # =====================================================================
 
-def compilar_agente_operaciones():
+def ruta_decision(state: AgentState) -> str:
     """
-    Construye el grafo de control, define las aristas condicionales
-    y compila el workflow final del agente inteligente.
+    Funcion auxiliar para la arista condicional.
+    Lee la decision tomada por el nodo de triaje y retorna el nombre del siguiente nodo.
     """
-    pass
+    triaje_datos = state.get("triaje", {})
+    return triaje_datos.get("decision", "AUTO_RESOLVER")
+
+
+def compilar_agente_operaciones(llm, retriever, document_chain):
+    """
+    Construye el grafo de control en LangGraph, define las aristas condicionales
+    y compila el workflow final del agente inteligente de Mercado Central 24h.
+    """
+    #  Inicializamos el grafo utilizando nuestro AgentState
+    workflow = StateGraph(AgentState)
+
+    #  Definimos los nodos del grafo pasando las dependencias requeridas (currificacion / cierres)
+    workflow.add_node("nodo_triage", lambda state: nodo_triage(state, llm))
+    workflow.add_node("nodo_auto_resolver", lambda state: nodo_auto_resolver(state, retriever, document_chain))
+    workflow.add_node("nodo_pedir_info", nodo_pedir_info)
+    workflow.add_node("nodo_abrir_ticket", nodo_abrir_ticket)
+
+    #  Punto de inicio del grafo
+    workflow.add_edge(START, "nodo_triage")
+
+    #  Arista condicional desde el triaje hacia el nodo correspondiente
+    workflow.add_conditional_edges(
+        "nodo_triage",
+        ruta_decision,
+        {
+            "AUTO_RESOLVER": "nodo_auto_resolver",
+            "PEDIR_INFO": "nodo_pedir_info",
+            "ABRIR_TICKET": "nodo_abrir_ticket"
+        }
+    )
+
+    #  Todos los nodos de respuesta conducen al final del flujo
+    workflow.add_edge("nodo_auto_resolver", END)
+    workflow.add_edge("nodo_pedir_info", END)
+    workflow.add_edge("nodo_abrir_ticket", END)
+
+    #  Compilacion del flujo ejecutable
+    app = workflow.compile()
+    return app
