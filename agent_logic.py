@@ -60,19 +60,16 @@ def inicializar_almacen_vectorial(chunks_documentos, gemini_api_key: str):
     """
     Creamos los embeddings usando Google y los guardamos en una base de datos local FAISS.
     """
-    # Modelo oficial y compatible para la API Key de Gemini
     modelo_embeddings = GoogleGenerativeAIEmbeddings(
-        model="text-embedding-004",
+        model="models/embedding-001",
         google_api_key=gemini_api_key
     )
 
-    # Creacion de la base de datos vectorial local FAISS
     vectorstore = FAISS.from_documents(
         chunks_documentos,
         modelo_embeddings
     )
 
-    # Configuracion del buscador con filtro de similitud
     retriever = vectorstore.as_retriever(
         search_type="similarity_score_threshold",
         search_kwargs={"score_threshold": 0.3, "k": 4}
@@ -103,7 +100,7 @@ def crear_cadena_rag(llm):
         (
             "system",
             """Eres un especialista de soporte, atención al cliente y operaciones de Mercado Central 24h.\n
-            Responde siempre utilizando estrictamente los conocimientos de los documentos oficiales proporcionados.\n
+            Responde siempre utilizando strictly los conocimientos de los documentos oficiales proporcionados.\n
             Si la información requerida no se encuentra en el contexto, responde únicamente 'No lo sé'."""
         ),
         (
