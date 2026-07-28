@@ -1,7 +1,7 @@
 import streamlit as st
 import os
+from langchain_community.document_loaders import PyPDFDirectoryLoader
 from agent_logic import (
-    cargar_politicas_empresa,
     inicializar_almacen_vectorial,
     inicializar_llm,
     crear_cadena_rag,
@@ -11,15 +11,17 @@ from agent_logic import (
 st.set_page_config(page_title="Agente Mercado Central 24h", page_icon="🤖")
 st.title("🤖 Agente de Soporte - Mercado Central 24h")
 
-# Inicialización del sistema
 @st.cache_resource
 def iniciar_agente():
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     if not api_key:
-        st.error("No se encontró la API Key de Gemini. Configúrala en los Secrets/Variables.")
+        st.error("No se encontró la API Key de Gemini.")
         return None
     
-    chunks = cargar_politicas_empresa("documentos/")
+    # Carga EXCLUSIVAMENTE los PDFs e ignora cualquier otro archivo (como el .xlsx)
+    loader = PyPDFDirectoryLoader("documentos/")
+    chunks = loader.load()
+
     vectorstore = inicializar_almacen_vectorial(chunks, api_key)
     llm = inicializar_llm(api_key)
     rag_chain = crear_cadena_rag(vectorstore, llm)
