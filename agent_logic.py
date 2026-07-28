@@ -60,9 +60,9 @@ def inicializar_almacen_vectorial(chunks_documentos, gemini_api_key: str):
     """
     Creamos los embeddings usando Google y los guardamos en una base de datos local FAISS.
     """
-    # Modelo de embeddings oficial de Google
+    # Modelo oficial y compatible para la API Key de Gemini
     modelo_embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/text-embedding-004",
+        model="models/embedding-001",
         google_api_key=gemini_api_key
     )
 
@@ -72,7 +72,7 @@ def inicializar_almacen_vectorial(chunks_documentos, gemini_api_key: str):
         modelo_embeddings
     )
 
-    # Configuracion del buscador con filtro de similitud para evitar respuestas inventadas
+    # Configuracion del buscador con filtro de similitud
     retriever = vectorstore.as_retriever(
         search_type="similarity_score_threshold",
         search_kwargs={"score_threshold": 0.3, "k": 4}
