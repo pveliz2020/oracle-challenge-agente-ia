@@ -73,3 +73,9 @@ streamlit run app.py
 ## Evidencia del Despliegue en OCI
 * **Enlace público de acceso:** `http://136.248.244.134:8501`
 * **Infraestructura:** Instancia de Cómputo en la Nube ejecutándose sobre Oracle Linux 9 en Oracle Cloud Infrastructure (OCI), gestionada mediante acceso remoto seguro vía SSH y ejecutada en segundo plano con persistencia mediante `nohup`.
+
+## ☁️ Evidencia del Deploy en la Nube
+
+La aplicación se encuentra desplegada y totalmente operativa en la nube. Puedes probar la interacción con el agente en tiempo real a través del siguiente enlace:
+
+* 🌐 **Enlace público de la aplicación:** [Mercado Central 24h - Agente de Soporte](https://oracle-challenge-agente-ia-byy98kut368kfi8jhacase.streamlit.app/ )
