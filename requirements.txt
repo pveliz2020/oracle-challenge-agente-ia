@@ -1,13 +1,10 @@
 streamlit
-
 langchain
 langchain-community
 langchain-text-splitters
 langchain-google-genai
 langgraph
-
 google-genai
-
 faiss-cpu
 pymupdf
 pypdf
