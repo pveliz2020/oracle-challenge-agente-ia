@@ -62,7 +62,7 @@ def inicializar_almacen_vectorial(chunks_documentos, gemini_api_key: str):
     """
     # Modelo oficial y compatible para la API Key de Gemini
     modelo_embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
+        model="text-embedding-004",
         google_api_key=gemini_api_key
     )
 
