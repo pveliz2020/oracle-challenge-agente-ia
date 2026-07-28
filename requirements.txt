@@ -3,6 +3,7 @@ langchain
 langchain-community
 langchain-google-genai
 langgraph
+google-genai
 faiss-cpu
 pypdf
 pymupdf
